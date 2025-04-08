@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/adiazny/rbac-vision/cmd"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
 func main() {
