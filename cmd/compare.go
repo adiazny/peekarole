@@ -194,7 +194,7 @@ func formatPermission(p Permission) string {
 		apiGroups = strings.Join(p.APIGroups, ",")
 	}
 
-	return fmt.Sprintf("[%s] %s: %s",
+	return fmt.Sprintf("apiGroups=[%s], resources=%s, verbs=%s",
 		apiGroups,
 		strings.Join(p.Resources, ","),
 		strings.Join(p.Verbs, ","))
