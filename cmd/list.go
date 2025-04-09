@@ -45,7 +45,15 @@ func runList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error listing ClusterRoles: %v", err)
 	}
 
+	// tabwriter.NewWriter() method arguments:
+	// - io.Writer: the writer to write to
+	// - minwidth: the minimum width of each column
+	// - tabwidth: the width of tab characters
+	// - padding: the number of spaces between columns
+	// - padchar: the character to use for padding
+	// - flags: a bit field of options (none are currently defined)
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+
 	fmt.Fprintf(w, "NAME\tRULES\tAGE\n")
 
 	for _, cr := range clusterRoles.Items {
@@ -54,6 +62,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		}
 
 		age := time.Since(cr.CreationTimestamp.Time).Round(time.Second)
+
 		fmt.Fprintf(w, "%s\t%d\t%v\n", cr.Name, len(cr.Rules), age)
 	}
 

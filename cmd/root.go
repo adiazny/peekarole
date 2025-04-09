@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	version = "v0.1.0"
+	version = "v0.2.0"
 	rootCmd = &cobra.Command{
 		Use:   "rbac-vision",
 		Short: "A tool for analyzing and comparing Kubernetes ClusterRoles",

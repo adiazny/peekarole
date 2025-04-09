@@ -53,6 +53,17 @@ func runCompare(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(w, "%s:\t%d rules\n", name, len(cr.Rules))
 	}
 
+	// Show common permissions first
+	fmt.Fprintln(w, "\nCommon Permissions:")
+	commonPerms := getCommonPermissions(clusterRoles)
+	if len(commonPerms) > 0 {
+		for _, perm := range commonPerms {
+			fmt.Fprintf(w, "  - %s\n", formatPermission(perm))
+		}
+	} else {
+		fmt.Fprintln(w, "  No common permissions found")
+	}
+
 	// Compare unique permissions
 	fmt.Fprintln(w, "\nUnique Permissions:")
 	for name, cr := range clusterRoles {
@@ -62,6 +73,8 @@ func runCompare(cmd *cobra.Command, args []string) error {
 			for _, perm := range uniquePerms {
 				fmt.Fprintf(w, "  - %s\n", formatPermission(perm))
 			}
+		} else {
+			fmt.Fprintf(w, "\n%s has no unique permissions\n", name)
 		}
 	}
 
@@ -76,32 +89,72 @@ type Permission struct {
 
 func getUniquePermissions(cr *rbacv1.ClusterRole, allRoles map[string]*rbacv1.ClusterRole) []Permission {
 	var unique []Permission
-	
+
 	for _, rule := range cr.Rules {
 		perm := Permission{
 			Verbs:     rule.Verbs,
 			APIGroups: rule.APIGroups,
 			Resources: rule.Resources,
 		}
-		
+
 		isUnique := true
-		for _, otherCR := range allRoles {
-			if otherCR.Name == cr.Name {
+		for name, otherCR := range allRoles {
+			if name == cr.Name {
 				continue
 			}
-			
+
 			if hasPermission(otherCR, perm) {
 				isUnique = false
 				break
 			}
 		}
-		
+
 		if isUnique {
 			unique = append(unique, perm)
 		}
 	}
 
 	return unique
+}
+
+func getCommonPermissions(roles map[string]*rbacv1.ClusterRole) []Permission {
+	if len(roles) < 2 {
+		return nil
+	}
+
+	// Get all permissions from the first role as initial common set
+	var firstRole *rbacv1.ClusterRole
+	for _, role := range roles {
+		firstRole = role
+		break
+	}
+
+	common := make([]Permission, 0)
+	for _, rule := range firstRole.Rules {
+		perm := Permission{
+			Verbs:     rule.Verbs,
+			APIGroups: rule.APIGroups,
+			Resources: rule.Resources,
+		}
+
+		// Check if this permission exists in all other roles
+		isCommon := true
+		for name, otherRole := range roles {
+			if name == firstRole.Name {
+				continue
+			}
+			if !hasPermission(otherRole, perm) {
+				isCommon = false
+				break
+			}
+		}
+
+		if isCommon {
+			common = append(common, perm)
+		}
+	}
+
+	return common
 }
 
 func hasPermission(cr *rbacv1.ClusterRole, perm Permission) bool {
