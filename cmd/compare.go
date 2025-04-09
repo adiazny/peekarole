@@ -43,7 +43,7 @@ func runCompare(cmd *cobra.Command, args []string) error {
 		clusterRoles[name] = cr
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0.)
 
 	// Header
 	fmt.Fprintln(w, "\nCLUSTER ROLE COMPARISON")
