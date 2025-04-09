@@ -43,41 +43,48 @@ func runCompare(cmd *cobra.Command, args []string) error {
 		clusterRoles[name] = cr
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	fmt.Fprintln(w, "COMPARISON RESULTS:")
-	fmt.Fprintln(w, "==================")
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.Debug)
 
-	// Compare number of rules
-	fmt.Fprintln(w, "\nRule Count:")
+	// Header
+	fmt.Fprintln(w, "\nCLUSTER ROLE COMPARISON")
+	fmt.Fprintln(w, strings.Repeat("=", 40))
+
+	// Summary section
+	fmt.Fprintln(w, "\nSUMMARY:")
+	fmt.Fprintf(w, "Comparing %d roles:\t%s\n", len(clusterRoles), strings.Join(args, ", "))
+
+	// Rule count comparison
+	fmt.Fprintln(w, "\nRULE COUNTS:")
 	for name, cr := range clusterRoles {
-		fmt.Fprintf(w, "%s:\t%d rules\n", name, len(cr.Rules))
+		fmt.Fprintf(w, "  %s:\t%d rules\n", name, len(cr.Rules))
 	}
 
-	// Show common permissions first
-	fmt.Fprintln(w, "\nCommon Permissions:")
+	// Common permissions
+	fmt.Fprintln(w, "\nCOMMON PERMISSIONS:")
 	commonPerms := getCommonPermissions(clusterRoles)
 	if len(commonPerms) > 0 {
-		for _, perm := range commonPerms {
-			fmt.Fprintf(w, "  - %s\n", formatPermission(perm))
+		for i, perm := range commonPerms {
+			fmt.Fprintf(w, "  %d.\t%s\n", i+1, formatPermission(perm))
 		}
 	} else {
 		fmt.Fprintln(w, "  No common permissions found")
 	}
 
-	// Compare unique permissions
-	fmt.Fprintln(w, "\nUnique Permissions:")
+	// Unique permissions
+	fmt.Fprintln(w, "\nUNIQUE PERMISSIONS:")
 	for name, cr := range clusterRoles {
 		uniquePerms := getUniquePermissions(cr, clusterRoles)
 		if len(uniquePerms) > 0 {
-			fmt.Fprintf(w, "\n%s unique permissions:\n", name)
-			for _, perm := range uniquePerms {
-				fmt.Fprintf(w, "  - %s\n", formatPermission(perm))
+			fmt.Fprintf(w, "\n%s:\n", name)
+			for i, perm := range uniquePerms {
+				fmt.Fprintf(w, "  %d.\t%s\n", i+1, formatPermission(perm))
 			}
 		} else {
-			fmt.Fprintf(w, "\n%s has no unique permissions\n", name)
+			fmt.Fprintf(w, "\n%s:\tNo unique permissions\n", name)
 		}
 	}
 
+	fmt.Fprintln(w) // Final newline
 	return w.Flush()
 }
 
