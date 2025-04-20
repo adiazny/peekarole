@@ -22,3 +22,19 @@ First, export a ClusterRole from your Kubernetes cluster as JSON:
 
 ```bash
 kubectl get clusterrole <role-name> -o json > role.json
+```
+
+Then run Peekarole to analyze the exported file:
+
+```bash
+peekarole role.json
+```
+
+The output will display each API group/resource pair, the allowed verbs, and any resource names.
+
+Example output:
+
+```
+Composite Key: core/pods Verbs: [create delete get list patch update watch] Resource Names: []
+Composite Key: core/secrets Verbs: [create delete get list patch update watch] Resource Names: []
+```
