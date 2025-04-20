@@ -1,0 +1,62 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: full-admin-role
+  labels:
+    app: admin-tools
+    environment: production
+    tier: management
+  annotations:
+    description: "Full admin role for deployments, pods, and configmaps"
+    company.io/owner: "platform-team"
+    company.io/created-at: "2025-04-12"
+rules:
+# Deployment rules
+- apiGroups: ["apps"]
+  resources: 
+  - "deployments"
+  - "deployments/status"
+  - "deployments/scale"
+  - "deployments/rollback"
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+  resourceNames: ["frontend", "backend", "middleware"] # Optional: restrict to specific resources
+
+# Pod rules
+- apiGroups: [""]
+  resources: 
+  - "pods"
+  - "pods/log"
+  - "pods/exec"
+  - "pods/status"
+  - "pods/portforward"
+  - "pods/proxy"
+  - "pods/attach"
+  - "pods/binding"
+  - "pods/eviction"
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+
+# ConfigMap rules
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"]
+
+# Additional resource rules for more fields demonstration
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list"]
+
+# Non-resource URL rules
+- nonResourceURLs: 
+  - "/healthz"
+  - "/livez"
+  - "/readyz"
+  - "/metrics"
+  - "/api/*"
+  - "/apis/*"
+  - "/version"
+  verbs: ["get", "head"]
+
+# Example with all possible verbs
+- apiGroups: ["events.k8s.io"]
+  resources: ["events"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection", "head", "proxy", "impersonate"]
